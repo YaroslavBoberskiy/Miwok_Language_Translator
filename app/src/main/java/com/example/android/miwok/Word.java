@@ -8,7 +8,7 @@ public class Word {
     private String mMiwokTranslation;
     private String mDefaultTranslation;
 
-    public Word(String mMiwokTranslation, String mDefaultTranslation) {
+    public Word(String mDefaultTranslation, String mMiwokTranslation) {
         this.mMiwokTranslation = mMiwokTranslation;
         this.mDefaultTranslation = mDefaultTranslation;
     }
