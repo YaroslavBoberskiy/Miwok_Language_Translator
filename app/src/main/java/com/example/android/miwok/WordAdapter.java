@@ -1,6 +1,7 @@
 package com.example.android.miwok;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +18,11 @@ public class WordAdapter extends ArrayAdapter<Word> {
 
     private static final String LOG_TAG = WordAdapter.class.getSimpleName();
 
-    public WordAdapter(Context context, List<Word> words) {
+    private int backgrountColor;
+
+    public WordAdapter(Context context, List<Word> words, int backgrountColor) {
         super(context, 0, words);
+        this.backgrountColor = backgrountColor;
     }
 
     @Override
@@ -30,15 +34,23 @@ public class WordAdapter extends ArrayAdapter<Word> {
         }
 
         Word currentWord = getItem(position);
+        int color = ContextCompat.getColor(getContext(),backgrountColor);
 
         TextView miwokTranslationTextView = (TextView) listItemView.findViewById(R.id.miwok_text_view);
         miwokTranslationTextView.setText(currentWord.getmMiwokTranslation());
+        miwokTranslationTextView.setBackgroundColor(color);
 
         TextView defaultTranslationTextView = (TextView) listItemView.findViewById(R.id.default_text_view);
         defaultTranslationTextView.setText(currentWord.getmDefaultTranslation());
+        defaultTranslationTextView.setBackgroundColor(color);
 
         ImageView listImageView = (ImageView) listItemView.findViewById(R.id.image);
-        listImageView.setImageResource(currentWord.getmImageResourceId());
+
+        if (currentWord.hasmImage()) {
+            listImageView.setImageResource(currentWord.getmImageResourceId());
+        } else {
+            listImageView.setVisibility(View.GONE);
+        }
 
         return listItemView;
     }
