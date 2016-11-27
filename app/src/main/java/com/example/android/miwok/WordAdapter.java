@@ -47,6 +47,10 @@ public class WordAdapter extends ArrayAdapter<Word> {
 
         ImageView listImageView = (ImageView) listItemView.findViewById(R.id.image);
 
+        ImageView playImageView = (ImageView) listItemView.findViewById(R.id.playImage);
+        playImageView.setBackgroundColor(color);
+        playImageView.setImageResource(R.drawable.ic_play_arrow_white_24dp);
+
         if (currentWord.hasmImage()) {
             listImageView.setImageResource(currentWord.getmImageResourceId());
         } else {
