@@ -27,10 +27,26 @@ public class FamilyFragment extends Fragment {
     private MediaPlayer mediaPlayer;
     private AudioManager audioManager;
 
+//    Form mediaPlayer response depending on the character of audiofocus loss.
+
+    AudioManager.OnAudioFocusChangeListener afChangeListener =
+            new AudioManager.OnAudioFocusChangeListener() {
+                public void onAudioFocusChange(int focusChange) {
+                    if (focusChange == AUDIOFOCUS_LOSS_TRANSIENT) {
+                        mediaPlayer.pause();
+                    } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                        mediaPlayer.seekTo(0);
+                        mediaPlayer.start();
+                    } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                        mediaPlayerRelease();
+                    }
+                }
+            };
+
+
     public FamilyFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,34 +66,43 @@ public class FamilyFragment extends Fragment {
         words.add(new Word("younger brother", "chalitti", R.drawable.family_younger_brother, R.raw.family_younger_brother));
         words.add(new Word("older sister", "teṭe", R.drawable.family_older_sister, R.raw.family_older_sister));
         words.add(new Word("younger sister", "kolliti", R.drawable.family_younger_sister, R.raw.family_younger_sister));
-        words.add(new Word("grandmother","ama", R.drawable.family_grandmother, R.raw.family_grandmother));
-        words.add(new Word("grandfather","paapa", R.drawable.family_grandfather, R.raw. family_grandfather));
+        words.add(new Word("grandmother", "ama", R.drawable.family_grandmother, R.raw.family_grandmother));
+        words.add(new Word("grandfather", "paapa", R.drawable.family_grandfather, R.raw.family_grandfather));
 
+//        Create WordAdapter Object
         WordAdapter wordAdapter = new WordAdapter(getActivity(), words, R.color.category_family);
+//        Get listView
         ListView listView = (ListView) rootView.findViewById(R.id.list);
+//        Populate listView with listItems
         listView.setAdapter(wordAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Word word = words.get(position);
-                mediaPlayerRelease ();
 
+//                Release mediaPlayer resources before starting playing the new sound.
+                mediaPlayerRelease();
+
+//              Request permanent audio focus on the music audio stream.
+//              It's done immediately before begining audio playback.
                 int result = audioManager.requestAudioFocus(afChangeListener,
                         // Use the music stream.
                         AudioManager.STREAM_MUSIC,
                         // Request permanent focus.
                         AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
 
+//                Start playback only when a focus change request was successful.
                 if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                     // Start playback.
                     mediaPlayer = MediaPlayer.create(getActivity(), word.getmVoiceResourceId());
                     mediaPlayer.start();
+//                    Release memory/mediaPlayer resource when audio has completed playing.
                     mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                         @Override
                         public void onCompletion(MediaPlayer mp) {
-                            mediaPlayerRelease ();
-                            Log.v("Family Fragment","Completed");
+                            mediaPlayerRelease();
+                            Log.v("Family Fragment", "Completed");
                         }
                     });
                 }
@@ -86,23 +111,13 @@ public class FamilyFragment extends Fragment {
         return rootView;
     }
 
-    AudioManager.OnAudioFocusChangeListener afChangeListener =
-            new AudioManager.OnAudioFocusChangeListener() {
-                public void onAudioFocusChange(int focusChange) {
-                    if (focusChange == AUDIOFOCUS_LOSS_TRANSIENT) {
-                        mediaPlayer.pause();
-                    } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-                        mediaPlayer.seekTo(0);
-                        mediaPlayer.start();
-                    } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                        mediaPlayerRelease();
-                    }
-                }
-            };
-
     public void mediaPlayerRelease() {
         if (mediaPlayer != null) {
             mediaPlayer.release();
+
+//          This notifies the system that focus no longer required and unregisters the associated
+//          AudioManager.OnAudioFocusChangeListener.
+//          In the case of abandoning transient focus, this allows any interupted app to continue playback.
             audioManager.abandonAudioFocus(afChangeListener);
         }
         mediaPlayer = null;
@@ -118,6 +133,9 @@ public class FamilyFragment extends Fragment {
         }
         return super.onOptionsItemSelected(item);
     }
+
+//    onStop phase method is owerridden to completely free up memory from
+// resources used by the internal player engine associated with the MediaPlayer object.
 
     @Override
     public void onStop() {
