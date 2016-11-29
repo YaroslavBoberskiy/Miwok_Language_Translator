@@ -60,7 +60,7 @@ public class Word {
                 '}';
     }
 
-//    Method hasmImage(), which is used in WordAdapter to make decision add or not image to Adapter
+//    Method hasmImage(), which is used in WordAdapter to make decision add or not image to ListItem
 
     public boolean hasmImage() {
         if (getmImageResourceId() == HAS_NOT_INITIALIZED) {
